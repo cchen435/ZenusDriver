@@ -7,10 +7,5 @@ Model:
   mode: inference
   path: resnet.ResNet50
   type: keras
-Profiling:
-- Platform: ATS
-  latency: 34
-  peak_gpu_utilization: 50
-  peak_mem_utilization: 75
 QoS:
   latency: '4'
