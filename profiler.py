@@ -32,19 +32,24 @@ def run(config: dict):
 
     model = load_model(model_info)
 
-    print("\n\nWarmup!\n")
     # warm up
-    for round in range(10):
-        input = random(model_info['batch_size'], model_info['input_shape'])
-        output = model(input)
+    print("\n\nWarmup!\n")
+    input = random(model_info['batch_size'], model_info['input_shape'])
+    if model_info['mode'] == 'inference':
+        for round in range(10):
+            output = model(input)
+    else:
+        model.fit(input, input, epochs=10)
     
     m = Monitor(1000)
 
     # profiling 
     print("\n\nProfiling!\n")
-    for round in range(1000):
-        input = random(model_info['batch_size'], model_info['input_shape'])
-        output = model(input)
+    if model_info['mode'] == 'inference':
+        for round in range(1000):
+            output = model(input)
+    else:
+        model.fit(input, input, epochs=1000)
     
     print("\n\nDone!\n")
 
@@ -63,7 +68,6 @@ if __name__ == "__main__":
     config = parse_yaml_config(args.filename)
     m = init()
     utils = run(config);
-    print("\nUtils: ", utils)
     result = {'platform': utils[0], 'latency': utils[1], 'peak_gpu_utils': utils[2], 'peak_mem_utils': utils[3]}
 
     if hasattr(config, 'Profiling'):
@@ -71,10 +75,8 @@ if __name__ == "__main__":
     else:
         config['Profiling'] = [result]
 
-    print(args.filename.split('.'))
     dirname = os.path.dirname(args.filename)
     basename = os.path.basename(args.filename)
     name = os.path.splitext(basename)[0]
     filename = os.path.join(dirname, name + "_profile.yml")
-    print("config: ", config, ', filename: ', filename)
     gen_yaml_config(config, filename)

@@ -8,7 +8,7 @@ Model:
   path: resnet.ResNet50
   type: keras
 Profiling:
-- latency: 0.0412275708
+- latency: 0.0413550549
   peak_gpu_utils: 40
   peak_mem_utils: 1331664896
   platform: NVIDIA GeForce RTX 3080

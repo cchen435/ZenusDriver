@@ -10,7 +10,7 @@ def gen_yaml_config(data : dict, config_file : str):
         yaml.dump(data, f)
 
 def parse_yaml_config(config_file : str):
-    with open("config.yml", "r") as f:
+    with open(config_file, "r") as f:
         try:
             return yaml.safe_load(f)
         except yaml.YAMLError as e:
