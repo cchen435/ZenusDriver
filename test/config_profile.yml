@@ -1,16 +1,21 @@
 Model:
   batch_size: 4
+  epoches:
+  - 1000
   input_shape:
   - 224
   - 224
   - 3
+  label_dtype: uint8
+  label_shape:
+  - 1
   mode: inference
   path: resnet.ResNet50
   type: keras
 Profiling:
-- latency: 0.0413550549
+- latency: 0.0362067585
   peak_gpu_utils: 40
-  peak_mem_utils: 1331664896
+  peak_mem_utils: 10488102912
   platform: NVIDIA GeForce RTX 3080
 QoS:
   latency: '4'

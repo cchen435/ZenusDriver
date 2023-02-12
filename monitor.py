@@ -20,8 +20,9 @@ class Monitor(Thread):
     def run(self):
         while not self.stopped:
             utilization = nvmlDeviceGetUtilizationRates(self.handle)
+            meminfo = nvmlDeviceGetMemoryInfo(self.handle)
             gpu_util = utilization.gpu
-            mem_util = utilization.memory
+            mem_util = meminfo.used
 
             if gpu_util > self.peak_gpu_util:
                 self.peak_gpu_util = gpu_util
@@ -35,6 +36,7 @@ class Monitor(Thread):
         etime = time.process_time()
         latency = etime - self.stime
         platform = nvmlDeviceGetName(self.handle).decode()
+        nvmlShutdown()
         return (platform, latency, self.peak_gpu_util, self.peak_mem_util)
 
 

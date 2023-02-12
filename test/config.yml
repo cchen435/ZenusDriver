@@ -4,6 +4,11 @@ Model:
   - 224
   - 224
   - 3
+  label_shape:
+  - 1
+  label_dtype: uint8
+  epoches:
+  - 1000
   mode: inference
   path: resnet.ResNet50
   type: keras

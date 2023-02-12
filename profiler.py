@@ -10,6 +10,8 @@ def init():
     gpus = tf.config.list_physical_devices('GPU') 
     if not gpus:
         raise RuntimeError("Only support GPU profiling now")
+    
+    tf.config.experimental.reset_memory_stats('/gpu:0')
 
     try:
         for gpu in gpus:
@@ -17,29 +19,29 @@ def init():
     except RuntimeError as e:
         print(e)
     
-    if gpus: 
-        tf.config.experimental.reset_memory_stats('/gpu:0')
-    
 
 def finalize(m: Monitor, rounds: int):
     gpus = tf.config.list_physical_devices('GPU')
-    peak_mem_use = tf.config.experimental.get_memory_info('/gpu:0')['peak']
-    platform, latency, peak_gpu_util, peak_mem_util = m.stop()
-    return (platform, latency/rounds, peak_gpu_util, peak_mem_use, peak_mem_util)
+    platform, latency, peak_gpu_util, peak_mem_use = m.stop()
+    return (platform, latency/rounds, peak_gpu_util, peak_mem_use)
 
 def run(config: dict):
     model_info = config['Model']
 
     model = load_model(model_info)
 
+    mode = getattr(model_info, 'mode', 'inference')
+    if mode not in ['inference', 'training']:
+        raise(f"Unsupported running mode: {mode}")
+
     # warm up
     print("\n\nWarmup!\n")
     input = random(model_info['batch_size'], model_info['input_shape'])
-    if model_info['mode'] == 'inference':
+    if mode == 'inference':
         for round in range(10):
             output = model(input)
     else:
-        model.fit(input, input, epochs=10)
+        model.fit(input, input, epochs=10, batch_size=model_info['batch_size'])
     
     m = Monitor(1000)
 
@@ -49,7 +51,7 @@ def run(config: dict):
         for round in range(1000):
             output = model(input)
     else:
-        model.fit(input, input, epochs=1000)
+        model.fit(input, input, epochs=1000, batch_size=model_info['batch_size'])
     
     print("\n\nDone!\n")
 
@@ -66,7 +68,7 @@ parser.add_argument("filename", type=str, help="the yml config file for the job"
 if __name__ == "__main__":
     args = parser.parse_args()
     config = parse_yaml_config(args.filename)
-    m = init()
+    init()
     utils = run(config);
     result = {'platform': utils[0], 'latency': utils[1], 'peak_gpu_utils': utils[2], 'peak_mem_utils': utils[3]}
 
